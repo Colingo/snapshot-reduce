@@ -102,6 +102,46 @@ The `__lastTimestamp__` field is used to do an incremental map
     reduce and basically allows snapshot-reduce to reduce the
     entire history of the event log again.
 
+### Unpacking snapshots.
+
+You can also do the reverse, turn a snapshot into the minimal
+    amount of raw events needed to construct that snapshot
+
+```js
+var unpackSnapshot = require("snapshot-reduce/unpack")
+var assert = require("assert")
+var into = require("reducers/into")
+
+var list = unpackSnapshot({
+    id: "1"
+    , type: "x"
+    , timestamp: Date.now()
+    , foos: [{
+        id: "2"
+        , type: "x~foos"
+        , timestamp: Date.now()
+        , parentId: ["1"]
+    }]
+})
+
+assert.deepEqual(into(list), [{
+    eventType: "add"
+    , value: {
+        id: "1"
+        , type: "x"
+        , timestamp: someTimestamp
+    }
+}, {
+    eventType: "add"
+    , value: {
+        id: "2"
+        , type: "x~foos"
+        , timestamp: someTimestamp
+        , parentId: ["1"]
+    }
+}])
+```
+
 ## Installation
 
 `npm install snapshot-reduce`
