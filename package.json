@@ -17,7 +17,11 @@
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
-    "incremental-map-reduce": "~0.1.2"
+    "incremental-map-reduce": "~0.1.2",
+    "reducers": "git://github.com/Raynos/reducers"
+  },
+  "peerDependencies": {
+    "reducible": "Raynos/reducible#1.x"
   },
   "devDependencies": {
     "tape": "~0.2.2",
