@@ -175,7 +175,15 @@ function finalize(key, value) {
             return 0
         }
 
-        return a.timestamp < b.timestamp ? -1 : 1
+        if (a.timestamp === b.timestamp) {
+            return 0
+        } else if (a.timestamp < b.timestamp) {
+            return -1
+        } else if (a.timestamp > b.timestamp) {
+            return 1
+        } else {
+            return 0
+        }
     }
 
     function cleanse(data) {
