@@ -26,40 +26,40 @@ test("can reduce raw data into snapshots", function (assert) {
 
     var inserted = insert(input, [{
         eventType: "add"
+        , timestamp: ts
         , value: {
             title: "a"
             , type: "colingo-group"
             , id: groupId
-            , timestamp: ts
         }
     }, {
         eventType: "add"
+        , timestamp: ts
         , value: {
             name: "b"
             , id: memberOne
             , type: "colingo-group" + "~members"
             , imageUri: "b"
             , parentId: [groupId]
-            , timestamp: ts
         }
     }, {
         eventType: "add"
+        , timestamp: ts
         , value: {
             name: "c"
             , id: memberTwo
             , type: "colingo-group" + "~members"
             , imageUri: "c"
             , parentId: [groupId]
-            , timestamp: ts
         }
     }, {
         eventType: "remove"
+        , timestamp: ts
         , value: {
             id: memberOne
             , type: "colingo-group" + "~members"
             , name: "b"
             , parentId: [groupId]
-            , timestamp: ts
         }
     }])
 
@@ -85,14 +85,12 @@ test("can reduce raw data into snapshots", function (assert) {
             title: "a"
             , id: groupId
             , type: "colingo-group"
-            , timestamp: ts
             , members: [{
                 name: "c"
                 , id: memberTwo
                 , type: "colingo-group~members"
                 , imageUri: "c"
                 , parentId: [groupId]
-                , timestamp: ts
             }]
             , __lastTimestamp__: ts
         })

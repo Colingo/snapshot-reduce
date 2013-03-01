@@ -24,7 +24,7 @@ function snapshotReduce(snapshot, opts) {
             }
             , finalize: finalize
         }
-        , timestampPath: "value.timestamp"
+        , timestampPath: "timestamp"
         , lastTimestampPath: "__lastTimestamp__"
     })
 
@@ -35,12 +35,12 @@ function snapshotReduce(snapshot, opts) {
 function map() {
     function handleAdd() {
         if (parts.length === 1) {
-            value.__lastTimestamp__ = value.timestamp
+            value.__lastTimestamp__ = doc.timestamp
             emit(value.id, value)
         } else if (parts.length === 2) {
             var prop = parts[1]
             var result = {
-                __lastTimestamp__: value.timestamp
+                __lastTimestamp__: doc.timestamp
             }
             var key = value.parentId[0]
 
@@ -53,13 +53,13 @@ function map() {
         if (parts.length === 1) {
             emit(value.id, {
                 id: value.id
-                , __lastTimestamp__: value.timestamp
+                , __lastTimestamp__: doc.timestamp
                 , __deleted__: true
             })
         } else if (parts.length === 2) {
             var prop = parts[1]
             var result = {
-                __lastTimestamp__: value.timestamp
+                __lastTimestamp__: doc.timestamp
             }
             var key = value.parentId[0]
 

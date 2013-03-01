@@ -43,11 +43,11 @@ For this to work you must adhere to some constraints of the
 ```js
 {
     "eventType" : "add"
+    , "timestamp" : 1360877429848
     , "value" : {
         "title" : "some room"
         , "type" : "colingo-room"
         , "id" : "1"
-        , "timestamp" : 1360877429848
     }
 }
 ```
@@ -58,13 +58,13 @@ This is a message that says "a room was added". You may have
 ```js
 {
     "eventType" : "add"
+    , "timestamp" : 1360878425642
     , "value" : {
         "name" : "Jake"
         , "message" : "test"
         , "type" : "colingo-room~messages"
         , "parentId" : [ "1" ]
         , "id" : "3dedc0cc-917b-48ed-a3c9-6166011fb458"
-        , "timestamp" : 1360878425642
     }
 }
 ```
@@ -85,12 +85,10 @@ The two events above would be reduced to
     title: "some room"
     , id: "1"
     , type: "colingo-room"
-    , timestamp: 1360877429848
     , messages: [{
         name: "Jake"
         , message: "test"
         , id: "3dedc0cc-917b-48ed-a3c9-6166011fb458"
-        , timestamp: 1360878425642
         , type: "colingo-room~messages"
         , parentId: ["1"]
     }]
@@ -115,28 +113,26 @@ var into = require("reducers/into")
 var list = unpackSnapshot({
     id: "1"
     , type: "x"
-    , timestamp: Date.now()
     , foos: [{
         id: "2"
         , type: "x~foos"
-        , timestamp: Date.now()
         , parentId: ["1"]
     }]
 })
 
 assert.deepEqual(into(list), [{
     eventType: "add"
+    , timestamp: 0
     , value: {
         id: "1"
         , type: "x"
-        , timestamp: someTimestamp
     }
 }, {
     eventType: "add"
+    , timestamp: 0
     , value: {
         id: "2"
         , type: "x~foos"
-        , timestamp: someTimestamp
         , parentId: ["1"]
     }
 }])

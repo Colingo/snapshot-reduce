@@ -14,7 +14,7 @@ function unpackSnapshot(snapshot) {
         var actualValues = filter(allValues, isEvent)
 
         return map(cleanse(merge([snapshot, actualValues])), function (value) {
-            return { eventType: "add", value: value }
+            return { eventType: "add", timestamp: 0, value: value }
         })
     })
 }

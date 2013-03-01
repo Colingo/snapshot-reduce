@@ -19,11 +19,11 @@ test("can do an incremental reduce", function (assert) {
 
     var inserted = insert(input, [{
         "eventType" : "add"
+        , "timestamp" : 1360877429848
         , "value" : {
             "title" : "some room"
             , "type" : "colingo-room"
             , "id" : "1"
-            , "timestamp" : 1360877429848
         }
     }])
 
@@ -37,13 +37,13 @@ test("can do an incremental reduce", function (assert) {
     var secondInsertion = expand(reduced, function () {
         return insert(input, {
             "eventType" : "add"
+            , "timestamp" : 1360878425642
             , "value" : {
                 "name" : "Jake"
                 , "message" : "test"
                 , "type" : "colingo-room~messages"
                 , "parentId" : [ "1" ]
                 , "id" : "3dedc0cc-917b-48ed-a3c9-6166011fb458"
-                , "timestamp" : 1360878425642
             }
         })
     })
@@ -67,12 +67,10 @@ test("can do an incremental reduce", function (assert) {
             title: "some room"
             , id: "1"
             , type: "colingo-room"
-            , timestamp: 1360877429848
             , messages: [{
                 name: "Jake"
                 , message: "test"
                 , id: "3dedc0cc-917b-48ed-a3c9-6166011fb458"
-                , timestamp: 1360878425642
                 , type: "colingo-room~messages"
                 , parentId: ["1"]
             }]
