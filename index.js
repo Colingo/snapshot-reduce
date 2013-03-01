@@ -171,6 +171,10 @@ function finalize(key, value) {
     }
 
     function byTimestamp(a, b) {
+        if (!("timestamp" in a) && !("timestamp" in b)) {
+            return 0
+        }
+
         return a.timestamp < b.timestamp ? -1 : 1
     }
 
