@@ -10,11 +10,12 @@ function unpackSnapshot(snapshot) {
         var keys = Object.keys(snapshot)
         var values = map(keys, function (key) { return snapshot[key] })
         var allValues = flattenArrays(values)
+        var ts = snapshot.__lastTimestamp__ || 0
 
         var actualValues = filter(allValues, isEvent)
 
         return map(cleanse(merge([snapshot, actualValues])), function (value) {
-            return { eventType: "add", timestamp: 0, value: value }
+            return { eventType: "add", timestamp: ts, value: value }
         })
     })
 }
