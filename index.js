@@ -119,6 +119,12 @@ function reduce(_, values) {
         return res
     }
 
+    function isArray(x) {
+        return x !== null &&
+            x !== undefined &&
+            x.constructor === Array
+    }
+
     function find(arr, id) {
         for (var i = 0; i < arr.length; i++) {
             var item = arr[i]
@@ -170,8 +176,8 @@ function reduce(_, values) {
 
         if (targetValue === undefined) {
             result = sourceValue
-        } else if (Array.isArray(sourceValue)) {
-            if (!Array.isArray(targetValue)) {
+        } else if (isArray(sourceValue)) {
+            if (!isArray(targetValue)) {
                 targetValue = []
             }
 
@@ -210,6 +216,12 @@ function finalize(key, value) {
         return typeof x === "object" && x !== null
     }
 
+    function isArray(x) {
+        return x !== null &&
+            x !== undefined &&
+            x.constructor === Array
+    }
+
     function byTimestamp(a, b) {
         if (!isObject(a) || !isObject(b)) {
             return 0
@@ -244,7 +256,7 @@ function finalize(key, value) {
                 continue
             }
 
-            if (Array.isArray(value)) {
+            if (isArray(value)) {
                 res[key] = value.
                     filter(isNotDeleted).
                     map(cleanse).
