@@ -19,6 +19,7 @@ function snapshotReduce(snapshot, opts) {
             out: {
                 reduce: outputCollectionName
             }
+            // , jsMode: true
             , query: {
                 "value.type": new RegExp("^" + snapshot)
             }
@@ -33,10 +34,13 @@ function snapshotReduce(snapshot, opts) {
 
 /*global emit*/
 function map() {
+    var _emit = typeof emit !== "undefined" ? emit : function () {}
+
     function handleAdd() {
         if (parts.length === 1) {
             value.__lastTimestamp__ = doc.timestamp
-            emit(value.id, value)
+            _emit(value.id, value)
+            return [value.id, value]
         } else if (parts.length === 2) {
             var prop = parts[1]
             var result = {
@@ -45,13 +49,33 @@ function map() {
             var key = value.parentId[0]
 
             result[prop] = [value]
-            emit(key, result)
+            _emit(key, result)
+            return [key, result]
+        } else if (parts.length > 2) {
+            var paths = parts.slice(1)
+            var result = {
+                __lastTimestamp__: doc.timestamp
+            }
+            var keys = value.parentId.slice(1)
+            var key = value.parentId[0]
+            var parent = result
+
+            for (var i = 0; i < paths.length; i++) {
+                var path = paths[i]
+                var item = i === paths.length - 1 ?
+                    value : { id: keys[i] }
+                parent[path] = [item]
+                parent = item
+            }
+
+            _emit(key, result)
+            return [key, result]
         }
     }
 
     function handleRemove() {
         if (parts.length === 1) {
-            emit(value.id, {
+            _emit(value.id, {
                 id: value.id
                 , __lastTimestamp__: doc.timestamp
                 , __deleted__: true
@@ -67,7 +91,7 @@ function map() {
                 id: value.id
                 , __deleted__: true
             }]
-            emit(key, result)
+            _emit(key, result)
         }
     }
 
@@ -78,13 +102,23 @@ function map() {
     var eventType = doc.eventType
 
     if (eventType === "add") {
-        handleAdd()
+        return handleAdd()
     } else if (eventType === "remove") {
         handleRemove()
     }
 }
 
-function reduce(key, values) {
+function reduce(_, values) {
+    function clone(obj) {
+        var res = {}
+
+        for (var key in obj) {
+            res[key] = obj[key]
+        }
+
+        return res
+    }
+
     function find(arr, id) {
         for (var i = 0; i < arr.length; i++) {
             var item = arr[i]
@@ -119,14 +153,16 @@ function reduce(key, values) {
             return source
         }
 
+        var res = clone(target)
+
         for (var key in source) {
             var sourceValue = source[key]
             var targetValue = target[key]
 
-            target[key] = mergeValues(targetValue, sourceValue)
+            res[key] = mergeValues(targetValue, sourceValue)
         }
 
-        return target
+        return res
     }
 
     function mergeValues(targetValue, sourceValue) {
@@ -170,7 +206,15 @@ function finalize(key, value) {
         return !v.__deleted__
     }
 
+    function isObject(x) {
+        return typeof x === "object" && x !== null
+    }
+
     function byTimestamp(a, b) {
+        if (!isObject(a) || !isObject(b)) {
+            return 0
+        }
+
         if (!("timestamp" in a) && !("timestamp" in b)) {
             return 0
         }
@@ -189,7 +233,7 @@ function finalize(key, value) {
     function cleanse(data) {
         var res = {}
 
-        if (typeof data !== "object" || data === null) {
+        if (!isObject(data)) {
             return data
         }
 
