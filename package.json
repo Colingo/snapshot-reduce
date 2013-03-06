@@ -34,7 +34,8 @@
     "node-uuid": "~1.4.0",
     "after": "~0.6.0",
     "monotonic-timestamp": "0.0.8",
-    "xtend": "~2.0.3"
+    "xtend": "~2.0.3",
+    "introspect-reduce": "~0.1.2"
   },
   "licenses": [
     {
