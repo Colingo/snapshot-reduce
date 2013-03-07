@@ -252,7 +252,7 @@ function finalize(key, value) {
         for (var key in data) {
             var value = data[key]
 
-            if (value.__deleted__) {
+            if (value !== null && value !== undefined && value.__deleted__) {
                 continue
             }
 
