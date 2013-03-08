@@ -194,12 +194,12 @@ function reduce(_, values) {
     var result = {}
     var lastTimestamp = 0
 
-    values.forEach(function (v) {
-        if (v.__lastTimestamp__ > lastTimestamp) {
-            lastTimestamp = v.__lastTimestamp__
+    values.forEach(function (valueInReduce) {
+        if (valueInReduce.__lastTimestamp__ > lastTimestamp) {
+            lastTimestamp = valueInReduce.__lastTimestamp__
         }
 
-        result = merge(result, v)
+        result = merge(result, valueInReduce)
     })
 
     result.__lastTimestamp__ = lastTimestamp
@@ -209,7 +209,7 @@ function reduce(_, values) {
 
 function finalize(key, value) {
     function isNotDeleted(v) {
-        return !v.__deleted__
+        return v === null || v === undefined || !v.__deleted__
     }
 
     function isObject(x) {
