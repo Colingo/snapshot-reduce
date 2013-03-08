@@ -227,15 +227,15 @@ function finalize(key, value) {
             return 0
         }
 
-        if (!("timestamp" in a) && !("timestamp" in b)) {
+        if (!("createdAt" in a) && !("createdAt" in b)) {
             return 0
         }
 
-        if (a.timestamp === b.timestamp) {
+        if (a.createdAt === b.createdAt) {
             return 0
-        } else if (a.timestamp < b.timestamp) {
+        } else if (a.createdAt < b.createdAt) {
             return -1
-        } else if (a.timestamp > b.timestamp) {
+        } else if (a.createdAt > b.createdAt) {
             return 1
         } else {
             return 0
