@@ -4,8 +4,6 @@ var filter = require("reducers/filter")
 var merge = require("reducers/merge")
 var concat = require("reducers/concat")
 
-var introspect = require("introspect-reduce")
-
 module.exports = unpackSnapshot
 
 function unpackSnapshot(snapshot) {
