@@ -1,5 +1,6 @@
 require("./scenarios/colingo-group")
 require("./scenarios/colingo-room")
 require("./scenarios/colingo-room-incremental")
-require("./scenarios/course.js")
+require("./scenarios/course")
+require("./scenarios/colingo-hangout")
 require("./unpack")

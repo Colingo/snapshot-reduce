@@ -105,6 +105,8 @@ function map() {
         return handleAdd()
     } else if (eventType === "remove") {
         handleRemove()
+    } else if (eventType === "modify") {
+        return handleAdd()
     }
 }
 
