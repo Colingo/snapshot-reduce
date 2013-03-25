@@ -1,6 +1,6 @@
 {
   "name": "snapshot-reduce",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Incrementally reduce an event-log into a snapshot view of those events",
   "keywords": [],
   "author": "Raynos <raynos2@gmail.com>",
