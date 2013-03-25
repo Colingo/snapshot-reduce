@@ -54,6 +54,7 @@ test("map events", function (assert) {
 
     assert.deepEqual(res, ["1", {
         __lastTimestamp__: res[1].__lastTimestamp__
+        , id: "1"
         , lessons: [{
             id: "2"
             , type: "colingo-feed::course~lessons"

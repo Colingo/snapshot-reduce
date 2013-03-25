@@ -75,6 +75,7 @@ test("can reduce data into snapshot", function (assert) {
 
         assert.deepEqual(result, {
             __lastTimestamp__: ts + 1
+            , id: courseId
             , hangout: [{
                 a: "a"
                 , b: "d"

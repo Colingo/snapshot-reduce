@@ -36,17 +36,22 @@ function snapshotReduce(snapshot, opts) {
 function map() {
     var _emit = typeof emit !== "undefined" ? emit : function () {}
 
-    function handleAdd() {
+    function handleAdd(eventType) {
+        if (eventType === "modify") {
+            value.__modified__ = true
+        }
+
         if (parts.length === 1) {
             value.__lastTimestamp__ = doc.timestamp
             _emit(value.id, value)
             return [value.id, value]
         } else if (parts.length === 2) {
             var prop = parts[1]
-            var result = {
-                __lastTimestamp__: doc.timestamp
-            }
             var key = value.parentId[0]
+            var result = {
+                id: key
+                , __lastTimestamp__: doc.timestamp
+            }
 
             result[prop] = [value]
             _emit(key, result)
@@ -106,7 +111,7 @@ function map() {
     } else if (eventType === "remove") {
         handleRemove()
     } else if (eventType === "modify") {
-        return handleAdd()
+        return handleAdd("modify")
     }
 }
 
@@ -142,9 +147,10 @@ function reduce(_, values) {
         source.forEach(function (value) {
             var index = find(target, value.id)
 
-            if (index === null) {
+            if (index === null && !value.__modified__) {
                 target.push(value)
-            } else {
+            } else if (index !== null) {
+                delete value.__modified__
                 target[index] = merge(target[index], value)
             }
         })
@@ -167,7 +173,10 @@ function reduce(_, values) {
             var sourceValue = source[key]
             var targetValue = target[key]
 
-            res[key] = mergeValues(targetValue, sourceValue)
+            // if we have a target or the sourceValue is not modified
+            if (targetValue || !sourceValue.__modified__) {
+                res[key] = mergeValues(targetValue, sourceValue)
+            }
         }
 
         return res
@@ -176,7 +185,7 @@ function reduce(_, values) {
     function mergeValues(targetValue, sourceValue) {
         var result
 
-        if (targetValue === undefined) {
+        if (targetValue === undefined && !sourceValue.__modified__) {
             result = sourceValue
         } else if (isArray(sourceValue)) {
             if (!isArray(targetValue)) {
@@ -185,6 +194,7 @@ function reduce(_, values) {
 
             result = mergeArrays(targetValue.slice(), sourceValue)
         } else if (isObject(sourceValue) && isObject(targetValue)) {
+            delete sourceValue.__modified__
             result = merge(targetValue, sourceValue)
         } else {
             result = sourceValue
