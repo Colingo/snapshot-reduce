@@ -80,11 +80,15 @@ function map() {
 
     function handleRemove() {
         if (parts.length === 1) {
-            _emit(value.id, {
+            var key = value.id
+            var result = {
                 id: value.id
                 , __lastTimestamp__: doc.timestamp
                 , __deleted__: true
-            })
+            }
+
+            emit(key, result)
+            return [key, result]
         } else if (parts.length === 2) {
             var prop = parts[1]
             var result = {
@@ -97,6 +101,7 @@ function map() {
                 , __deleted__: true
             }]
             _emit(key, result)
+            return [key, result]
         }
     }
 
@@ -109,7 +114,7 @@ function map() {
     if (eventType === "add") {
         return handleAdd()
     } else if (eventType === "remove") {
-        handleRemove()
+        return handleRemove()
     } else if (eventType === "modify") {
         return handleAdd("modify")
     }
