@@ -1,12 +1,6 @@
-var mongo = require("mongo-client")
-var insert = require("mongo-client/insert")
-var find = require("mongo-client/find")
-var expand = require("reducers/expand")
-var take = require("reducers/take")
-var passback = require("callback-reduce/passback")
-
 var test = require("tape")
 var timestamp = require("monotonic-timestamp")
+var mongo = require("continuable-mongo")
 
 var snapshotReduce = require("../../index")
 var reduce = snapshotReduce.reduce
@@ -15,22 +9,22 @@ var cleanup = require("../util/cleanup")
 
 var events = [
     Event({
-        id: "1"
-        , type: "colingo-feed::course~members"
-        , parentId: ["0"]
-        , name: "steve"
-    }, "add")
-    , Event({
-        id: "1"
-        , type: "colingo-feed::course~members"
-        , parentId: ["0"]
-        , online: true
-    }, "modify")
-    , Event({
-        id: "2"
-        , type: "colingo-feed::course~members"
-        , parentId: ["0"]
-        , online: true
+        id: "1",
+        type: "colingo-feed::course~members",
+        parentId: ["0"],
+        name: "steve"
+    }, "add"),
+    Event({
+        id: "1",
+        type: "colingo-feed::course~members",
+        parentId: ["0"],
+        online: true
+    }, "modify"),
+    Event({
+        id: "2",
+        type: "colingo-feed::course~members",
+        parentId: ["0"],
+        online: true
     }, "modify")
 ]
 
@@ -60,47 +54,48 @@ test("modify non-existent records does not add shit", function (assert) {
 
     var inputName = "event-log"
     var outputName = "snapshot.colingo-feed::course"
-    var input = client(inputName)
-    var output = client(outputName)
+    var input = client.collection(inputName)
+    var output = client.collection(outputName)
 
-    var inserted = insert(input, events)
-
-    var reduced = expand(take(inserted, 1), function () {
-        return snapshotReduce("colingo-feed::course", {
-            inputCollection: input
-            , outputCollection: output
-        })
-    })
-
-    var result = expand(reduced, function () {
-        return find(output, {})
-    })
-
-    passback(result, Array, function (err, results) {
+    input.insert(events, function (err, records) {
         assert.ifError(err)
+        assert.equal(records.length, 3)
 
-        assert.deepEqual(results[0].value, {
-            id: "0"
-            , __lastTimestamp__: events[2].timestamp
-            , members: [{
-                id: "1"
-                , type: "colingo-feed::course~members"
-                , parentId: ["0"]
-                , name: "steve"
-                , online: true
-            }]
-        })
+        snapshotReduce("colingo-feed::course", {
+            inputCollection: input,
+            outputCollection: output
+        }, function (err, result) {
+            assert.ifError(err)
+            assert.ok(result)
 
-        cleanup(input, output, function () {
-            assert.end()
+            output.find().toArray(function (err, results) {
+                assert.ifError(err)
+
+                assert.deepEqual(results[0].value, {
+                    id: "0",
+                    __lastTimestamp__: events[2].timestamp,
+                    members: [{
+                        id: "1",
+                        type: "colingo-feed::course~members",
+                        parentId: ["0"],
+                        name: "steve",
+                        online: true
+                    }]
+                })
+
+                cleanup(client, input, output, function (err) {
+                    assert.ifError(err)
+                    assert.end()
+                })
+            })
         })
     })
 })
 
 function Event(value, type) {
     return {
-        eventType: type || "add"
-        , timestamp: timestamp()
-        , value: value
+        eventType: type || "add",
+        timestamp: timestamp(),
+        value: value
     }
 }

@@ -5,31 +5,28 @@ snapshotReduce.map = map
 
 module.exports = snapshotReduce
 
-function snapshotReduce(snapshot, opts) {
+function snapshotReduce(snapshot, opts, callback) {
     var inputCollection = opts.inputCollection
     var outputCollection = opts.outputCollection
     var outputCollectionName = opts.outputName ||
         "snapshot." + snapshot
 
-    var result = incrementalMapReduce(inputCollection, {
-        map: map
-        , reduce: reduce
-        , reducedCollection: outputCollection
-        , options: {
+    incrementalMapReduce(inputCollection, {
+        map: map,
+        reduce: reduce,
+        reducedCollection: outputCollection,
+        options: {
             out: {
                 reduce: outputCollectionName
-            }
-            // , jsMode: true
-            , query: {
+            },
+            query: {
                 "value.type": new RegExp("^" + snapshot)
-            }
-            , finalize: finalize
-        }
-        , timestampPath: "timestamp"
-        , lastTimestampPath: "__lastTimestamp__"
-    })
-
-    return result
+            },
+            finalize: finalize
+        },
+        timestampPath: "timestamp",
+        lastTimestampPath: "__lastTimestamp__"
+    }, callback)
 }
 
 /*global emit*/
@@ -41,16 +38,18 @@ function map() {
             value.__modified__ = true
         }
 
+        var result, key
+
         if (parts.length === 1) {
             value.__lastTimestamp__ = doc.timestamp
             _emit(value.id, value)
             return [value.id, value]
         } else if (parts.length === 2) {
             var prop = parts[1]
-            var key = value.parentId[0]
-            var result = {
-                id: key
-                , __lastTimestamp__: doc.timestamp
+            key = value.parentId[0]
+            result = {
+                id: key,
+                __lastTimestamp__: doc.timestamp
             }
 
             result[prop] = [value]
@@ -58,11 +57,12 @@ function map() {
             return [key, result]
         } else if (parts.length > 2) {
             var paths = parts.slice(1)
-            var result = {
+            var keys = value.parentId.slice(1)
+            result = {
                 __lastTimestamp__: doc.timestamp
             }
-            var keys = value.parentId.slice(1)
-            var key = value.parentId[0]
+            key = value.parentId[0]
+
             var parent = result
 
             for (var i = 0; i < paths.length; i++) {
@@ -79,26 +79,28 @@ function map() {
     }
 
     function handleRemove() {
+        var result, key
+
         if (parts.length === 1) {
-            var key = value.id
-            var result = {
-                id: value.id
-                , __lastTimestamp__: doc.timestamp
-                , __deleted__: true
+            key = value.id
+            result = {
+                id: value.id,
+                __lastTimestamp__: doc.timestamp,
+                __deleted__: true
             }
 
             emit(key, result)
             return [key, result]
         } else if (parts.length === 2) {
             var prop = parts[1]
-            var result = {
+            result = {
                 __lastTimestamp__: doc.timestamp
             }
-            var key = value.parentId[0]
+            key = value.parentId[0]
 
             result[prop] = [{
-                id: value.id
-                , __deleted__: true
+                id: value.id,
+                __deleted__: true
             }]
             _emit(key, result)
             return [key, result]

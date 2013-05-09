@@ -1,21 +1,17 @@
 var after = require("after")
-var fold = require("reducers/fold")
-var close = require("mongo-client/close")
-
-var slice = Array.prototype.slice
 
 module.exports = cleanup
 
-function cleanup() {
-    var cols = slice.call(arguments)
+function cleanup(client) {
+    var cols = [].slice.call(arguments, 1)
     var callback = cols.pop()
 
     var done = after(cols.length, function () {
-        close(cols[0], callback)
+        client.close(callback)
     })
 
     cols.forEach(function (col) {
-        fold(col, function (col) {
+        col(function (err, col) {
             col.drop(done)
         })
     })

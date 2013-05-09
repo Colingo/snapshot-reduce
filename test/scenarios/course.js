@@ -1,15 +1,7 @@
-var mongo = require("mongo-client")
-var insert = require("mongo-client/insert")
-var find = require("mongo-client/find")
-var expand = require("reducers/expand")
-var take = require("reducers/take")
-var passback = require("callback-reduce/passback")
 var timestamp = require("monotonic-timestamp")
+var mongo = require("continuable-mongo")
 
 var test = require("tape")
-var uuid = require("node-uuid")
-var extend = require("xtend")
-var util = require("util")
 
 var snapshotReduce = require("../../index")
 var map = snapshotReduce.map
@@ -18,26 +10,26 @@ var cleanup = require("../util/cleanup")
 
 var events = [
     Event({
-        id: "1"
-        , type: "colingo-feed::course"
-    })
-    , Event({
-        id: "2"
-        , type: "colingo-feed::course~lessons"
-        , name: "I am a lesson"
-        , parentId: ["1"]
-    })
-    , Event({
-        id: "3"
-        , type: "colingo-feed::course~lessons~questions"
-        , name: "I am a question"
-        , parentId: ["1", "2"]
-    })
-    , Event({
-        id: "4"
-        , type: "colingo-feed::course~lessons~questions~answer"
-        , name: "I am an answer"
-        , parentId: ["1", "2", "3"]
+        id: "1",
+        type: "colingo-feed::course"
+    }),
+    Event({
+        id: "2",
+        type: "colingo-feed::course~lessons",
+        name: "I am a lesson",
+        parentId: ["1"]
+    }),
+    Event({
+        id: "3",
+        type: "colingo-feed::course~lessons~questions",
+        name: "I am a question",
+        parentId: ["1", "2"]
+    }),
+    Event({
+        id: "4",
+        type: "colingo-feed::course~lessons~questions~answer",
+        name: "I am an answer",
+        parentId: ["1", "2", "3"]
     })
 ]
 
@@ -45,52 +37,52 @@ test("map events", function (assert) {
     var res = map.call(events[0])
 
     assert.deepEqual(res, ["1", {
-        id: "1"
-        , type: "colingo-feed::course"
-        , __lastTimestamp__: res[1].__lastTimestamp__
+        id: "1",
+        type: "colingo-feed::course",
+        __lastTimestamp__: res[1].__lastTimestamp__
     }])
 
-    var res = map.call(events[1])
+    var res2 = map.call(events[1])
 
-    assert.deepEqual(res, ["1", {
-        __lastTimestamp__: res[1].__lastTimestamp__
-        , id: "1"
-        , lessons: [{
-            id: "2"
-            , type: "colingo-feed::course~lessons"
-            , name: "I am a lesson"
-            , parentId: ["1"]
+    assert.deepEqual(res2, ["1", {
+        __lastTimestamp__: res2[1].__lastTimestamp__,
+        id: "1",
+        lessons: [{
+            id: "2",
+            type: "colingo-feed::course~lessons",
+            name: "I am a lesson",
+            parentId: ["1"]
         }]
     }])
 
-    var res = map.call(events[2])
+    var res3 = map.call(events[2])
 
-    assert.deepEqual(res, ["1", {
-        __lastTimestamp__: res[1].__lastTimestamp__
-        , lessons: [{
-            id: "2"
-            , questions: [{
-                id: "3"
-                , type: "colingo-feed::course~lessons~questions"
-                , name: "I am a question"
-                , parentId: ["1", "2"]
+    assert.deepEqual(res3, ["1", {
+        __lastTimestamp__: res3[1].__lastTimestamp__,
+        lessons: [{
+            id: "2",
+            questions: [{
+                id: "3",
+                type: "colingo-feed::course~lessons~questions",
+                name: "I am a question",
+                parentId: ["1", "2"]
             }]
         }]
     }])
 
-    var res = map.call(events[3])
+    var res4 = map.call(events[3])
 
-    assert.deepEqual(res, ["1", {
-        __lastTimestamp__: res[1].__lastTimestamp__
-        , lessons: [{
-            id: "2"
-            , questions: [{
-                id: "3"
-                , answer: [{
-                    id: "4"
-                    , type: "colingo-feed::course~lessons~questions~answer"
-                    , name: "I am an answer"
-                    , parentId: ["1", "2", "3"]
+    assert.deepEqual(res4, ["1", {
+        __lastTimestamp__: res4[1].__lastTimestamp__,
+        lessons: [{
+            id: "2",
+            questions: [{
+                id: "3",
+                answer: [{
+                    id: "4",
+                    type: "colingo-feed::course~lessons~questions~answer",
+                    name: "I am an answer",
+                    parentId: ["1", "2", "3"]
                 }]
             }]
         }]
@@ -107,26 +99,26 @@ test("reduce events", function (assert) {
     var result = reduce(null, events1)
 
     assert.deepEqual(result, {
-        id: "1"
-        , type: "colingo-feed::course"
-        , __lastTimestamp__: result.__lastTimestamp__
+        id: "1",
+        type: "colingo-feed::course",
+        __lastTimestamp__: result.__lastTimestamp__
     })
 
     var events2 = events.slice(0, 2).map(function (v) {
         return map.call(v)[1]
     })
 
-    var result = reduce(null, events2)
+    var result2 = reduce(null, events2)
 
-    assert.deepEqual(result, {
-        id: "1"
-        , type: "colingo-feed::course"
-        , __lastTimestamp__: result.__lastTimestamp__
-        , lessons: [{
-            id: "2"
-            , type: "colingo-feed::course~lessons"
-            , name: "I am a lesson"
-            , parentId: ["1"]
+    assert.deepEqual(result2, {
+        id: "1",
+        type: "colingo-feed::course",
+        __lastTimestamp__: result2.__lastTimestamp__ ,
+        lessons: [{
+            id: "2",
+            type: "colingo-feed::course~lessons",
+            name: "I am a lesson",
+            parentId: ["1"]
         }]
     })
 
@@ -134,22 +126,22 @@ test("reduce events", function (assert) {
         return map.call(v)[1]
     })
 
-    var result = reduce(null, events3)
+    var result3 = reduce(null, events3)
 
-    assert.deepEqual(result, {
-        id: "1"
-        , type: "colingo-feed::course"
-        , __lastTimestamp__: result.__lastTimestamp__
-        , lessons: [{
-            id: "2"
-            , type: "colingo-feed::course~lessons"
-            , name: "I am a lesson"
-            , parentId: ["1"]
-            , questions: [{
-                id: "3"
-                , type: "colingo-feed::course~lessons~questions"
-                , name: "I am a question"
-                , parentId: ["1", "2"]
+    assert.deepEqual(result3, {
+        id: "1",
+        type: "colingo-feed::course",
+        __lastTimestamp__: result3.__lastTimestamp__,
+        lessons: [{
+            id: "2",
+            type: "colingo-feed::course~lessons",
+            name: "I am a lesson",
+            parentId: ["1"],
+            questions: [{
+                id: "3",
+                type: "colingo-feed::course~lessons~questions",
+                name: "I am a question",
+                parentId: ["1", "2"]
             }]
         }]
     })
@@ -158,27 +150,27 @@ test("reduce events", function (assert) {
         return map.call(v)[1]
     })
 
-    var result = reduce(null, events4)
+    var result4 = reduce(null, events4)
 
-    assert.deepEqual(result, {
-        id: "1"
-        , type: "colingo-feed::course"
-        , __lastTimestamp__: result.__lastTimestamp__
-        , lessons: [{
-            id: "2"
-            , type: "colingo-feed::course~lessons"
-            , name: "I am a lesson"
-            , parentId: ["1"]
-            , questions: [{
-                id: "3"
-                , type: "colingo-feed::course~lessons~questions"
-                , name: "I am a question"
-                , parentId: ["1", "2"]
-                , answer: [{
-                    id: "4"
-                    , type: "colingo-feed::course~lessons~questions~answer"
-                    , name: "I am an answer"
-                    , parentId: ["1", "2", "3"]
+    assert.deepEqual(result4, {
+        id: "1",
+        type: "colingo-feed::course",
+        __lastTimestamp__: result4.__lastTimestamp__,
+        lessons: [{
+            id: "2",
+            type: "colingo-feed::course~lessons",
+            name: "I am a lesson",
+            parentId: ["1"],
+            questions: [{
+                id: "3",
+                type: "colingo-feed::course~lessons~questions",
+                name: "I am a question",
+                parentId: ["1", "2"],
+                answer: [{
+                    id: "4",
+                    type: "colingo-feed::course~lessons~questions~answer",
+                    name: "I am an answer",
+                    parentId: ["1", "2", "3"]
                 }]
             }]
         }]
@@ -190,84 +182,90 @@ test("reduce events", function (assert) {
 test("can reduce courses", function (assert) {
     var client = mongo("mongodb://localhost:27017/snapshot-reduce-tests")
 
-    var input = client("event-log")
-    var output = client("snapshot.colingo-feed::course")
+    var input = client.collection("event-log")
+    var output = client.collection("snapshot.colingo-feed::course")
 
-    var inserted = insert(input, [
+    input.insert([
         Event({
-            id: "1"
-            , type: "colingo-feed::course"
+            id: "1",
+            type: "colingo-feed::course"
+        }),
+        Event({
+            id: "2",
+            type: "colingo-feed::course~lessons",
+            name: "I am a lesson",
+            parentId: ["1"]
+        }),
+        Event({
+            id: "3",
+            type: "colingo-feed::course~lessons~questions",
+            name: "I am a question",
+            parentId: ["1", "2"]
+        }),
+        Event({
+            id: "4",
+            type: "colingo-feed::course~lessons~questions~answer",
+            name: "I am an answer",
+            parentId: ["1", "2", "3"]
         })
-        , Event({
-            id: "2"
-            , type: "colingo-feed::course~lessons"
-            , name: "I am a lesson"
-            , parentId: ["1"]
-        })
-        , Event({
-            id: "3"
-            , type: "colingo-feed::course~lessons~questions"
-            , name: "I am a question"
-            , parentId: ["1", "2"]
-        })
-        , Event({
-            id: "4"
-            , type: "colingo-feed::course~lessons~questions~answer"
-            , name: "I am an answer"
-            , parentId: ["1", "2", "3"]
-        })
-    ])
-
-    var reduced = expand(take(inserted, 1), function () {
-        return snapshotReduce("colingo-feed::course", {
-            inputCollection: input
-            , outputCollection: output
-        })
-    })
-
-    var results = expand(reduced, function (col) {
-        return find(output)
-    })
-
-    passback(results, Array, function (err, results) {
+    ], function (err, result) {
         assert.ifError(err)
+        assert.equal(result.length, 4)
 
-        var result = results && results[0].value
+        snapshotReduce("colingo-feed::course", {
+            inputCollection: input,
+            outputCollection: output
+        }, function (err, result) {
+            assert.ifError(err)
+            assert.ok(result)
 
-        assert.deepEqual(result, {
-            id: "1"
-            , type: "colingo-feed::course"
-            , __lastTimestamp__: result.__lastTimestamp__
-            , lessons: [{
-                id: "2"
-                , type: "colingo-feed::course~lessons"
-                , name: "I am a lesson"
-                , parentId: ["1"]
-                , questions: [{
-                    id: "3"
-                    , type: "colingo-feed::course~lessons~questions"
-                    , name: "I am a question"
-                    , parentId: ["1", "2"]
-                    , answer: [{
-                        id: "4"
-                        , type: "colingo-feed::course~lessons~questions~answer"
-                        , name: "I am an answer"
-                        , parentId: ["1", "2", "3"]
+            output.find().toArray(function (err, results) {
+                assert.ifError(err)
+
+                var result = results && results[0].value
+
+                var questions = [{
+                    id: "3",
+                    type: "colingo-feed::course~lessons~questions",
+                    name: "I am a question",
+                    parentId: ["1", "2"],
+                    answer: [{
+                        id: "4",
+                        type: "colingo-feed::course~lessons~questions~answer",
+                        name: "I am an answer",
+                        parentId: ["1", "2", "3"]
                     }]
                 }]
-            }]
-        })
 
-        cleanup(input, output, function () {
-            assert.end()
+                var expected = {
+                    id: "1",
+                    type: "colingo-feed::course",
+                    __lastTimestamp__: result.__lastTimestamp__,
+                    lessons: [{
+                        id: "2",
+                        type: "colingo-feed::course~lessons",
+                        name: "I am a lesson",
+                        parentId: ["1"],
+                        questions: questions
+                    }]
+                }
+
+                assert.deepEqual(result, expected)
+
+                cleanup(client, input, output, function (err) {
+                    assert.ifError(err)
+
+                    assert.end()
+                })
+            })
         })
     })
 })
 
 function Event(value) {
     return {
-        eventType: "add"
-        , timestamp: timestamp()
-        , value: value
+        eventType: "add",
+        timestamp: timestamp(),
+        value: value
     }
 }
