@@ -1,6 +1,5 @@
 var test = require("tape")
 var uuid = require("node-uuid")
-var into = require("reducers/into")
 
 var ts = Date.now()
 
@@ -33,7 +32,7 @@ test("can merge snapshot and raw data", function (assert) {
 
     var list = unpackSnapshot(snapshot)
 
-    assert.deepEqual(into(list), [{
+    assert.deepEqual(list, [{
         eventType: "add"
         , timestamp: 0
         , value: {
@@ -116,7 +115,7 @@ test("can unpack snapshot recursively", function (assert) {
         }]
     }
 
-    var list = into(unpackSnapshot(snapshot))
+    var list = unpackSnapshot(snapshot)
 
     assert.deepEqual(list, events)
     assert.end()
