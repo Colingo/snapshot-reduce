@@ -20,20 +20,18 @@ Snapshot reduce allows you to accumulate a subset of a event log
 
 ```js
 var snapshotReduce = require("snapshot-reduce")
-var passback = require("callback-reduce/passback")
+var mongo = require("continuable-mongo")
 
-// Get a mongoDB instance however you want
-var db = someMongoDb
+// Get a mongoDB instance however you want or use continuable-mongo
+var db = mongo("mongodb://localhost:27017/my-database")
 var inputCollection = db.collection("event-log")
 var outputCollection = db.collection("snapshot.my-thing")
 
 var command = snapshotReduce("my-thing", {
     inputCollection: inputCollection
     , outputCollection: outputCollection
-})
-
-passback(command, function (err, res) {
-
+}, function (err, res) {
+    /* ... */
 })
 ```
 
@@ -108,7 +106,6 @@ You can also do the reverse, turn a snapshot into the minimal
 ```js
 var unpackSnapshot = require("snapshot-reduce/unpack")
 var assert = require("assert")
-var into = require("reducers/into")
 
 var list = unpackSnapshot({
     id: "1"
@@ -120,7 +117,7 @@ var list = unpackSnapshot({
     }]
 })
 
-assert.deepEqual(into(list), [{
+assert.deepEqual(list, [{
     eventType: "add"
     , timestamp: 0
     , value: {
